@@ -1,7 +1,6 @@
 mod calculadora;
 mod calcpena;
-
-use chrono::{Utc, Duration, DateTime, Months, Month, TimeZone, offset, Local, TimeDelta};
+mod input_numerico;
 
 use eframe::{egui, NativeOptions, run_native};
 use crate::calcpena::Calcpena;

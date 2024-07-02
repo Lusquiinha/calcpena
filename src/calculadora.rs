@@ -4,35 +4,51 @@ use chrono::{DateTime, Duration, Local, Months};
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Calculadora {
     pub datas: CalculosDeData,
+    pub dd: DeltaData,
+    pub updt: bool,
+    pub teste: u32,
 }
 
 
 impl Calculadora{
     pub fn new() -> Self{
         Self{
-            datas: CalculosDeData::new(DeltaData{dia: 0, mes: 0, ano: 0})
+            datas: CalculosDeData::new(DeltaData{dia: 0, mes: 0, ano: 0}),
+            dd: DeltaData::new(0, 0, 0),
+            updt: false,
+            teste: 0,
         }
     }
     pub fn calc_datas(&mut self, dd: DeltaData) {
         self.datas = CalculosDeData::new(dd);
+        self.dd = dd;
+    }
+
+    pub fn update(&mut self) {
+        if self.updt{
+            self.calc_datas(self.dd);
+            self.updt = false;
+            println!("{}", self.teste);
+            self.teste+=1;
+        }
     }
 }
 #[derive(Clone, Copy, Debug)]
 pub struct CalculosDeData{
-    inteiro:            DeltaData,
-    inteiro_data:       DateTime<Local>,
-    um_sexto:           DeltaData,
-    um_sexto_data:      DateTime<Local>,
-    um_quinto:          DeltaData,
-    um_quinto_data:     DateTime<Local>,
-    um_quarto:          DeltaData,
-    um_quarto_data:     DateTime<Local>,
-    um_terco:           DeltaData,
-    um_terco_data:      DateTime<Local>,
-    um_meio:            DeltaData,
-    um_meio_data:       DateTime<Local>,
-    dois_tercos:        DeltaData,
-    dois_tercos_data:   DateTime<Local>,
+    pub inteiro:            DeltaData,
+    pub inteiro_data:       DateTime<Local>,
+    pub um_sexto:           DeltaData,
+    pub um_sexto_data:      DateTime<Local>,
+    pub um_quinto:          DeltaData,
+    pub um_quinto_data:     DateTime<Local>,
+    pub um_quarto:          DeltaData,
+    pub um_quarto_data:     DateTime<Local>,
+    pub um_terco:           DeltaData,
+    pub um_terco_data:      DateTime<Local>,
+    pub um_meio:            DeltaData,
+    pub um_meio_data:       DateTime<Local>,
+    pub dois_tercos:        DeltaData,
+    pub dois_tercos_data:   DateTime<Local>,
 }
 
 impl CalculosDeData{
@@ -87,9 +103,9 @@ impl PartialEq for CalculosDeData {
 }
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DeltaData {
-    dia: u32,
-    mes: u32,
-    ano: u32
+    pub dia: u32,
+    pub mes: u32,
+    pub ano: u32
 }
 
 impl DeltaData {
@@ -154,7 +170,8 @@ mod tests {
             um_meio_data: Local::now() + um_meio,
             dois_tercos,
             dois_tercos_data: Local::now() + dois_tercos,
-        }};
+        },
+        ..calc};
         println!("{:?}", calc);
         println!("{:?}", expected);
         assert_eq!(calc, expected);
@@ -187,7 +204,8 @@ mod tests {
             um_meio_data: Local::now() + um_meio,
             dois_tercos,
             dois_tercos_data: Local::now() + dois_tercos,
-        }};
+        },
+            ..calc};
         println!("{:?}", calc);
         println!("{:?}", expected);
         assert_eq!(calc, expected);
@@ -219,7 +237,8 @@ mod tests {
             um_meio_data: Local::now() + um_meio,
             dois_tercos,
             dois_tercos_data: Local::now() + dois_tercos,
-        }};
+        },
+            ..calc};
         println!("{:?}", calc);
         println!("{:?}", expected);
         assert_eq!(calc, expected);
@@ -251,7 +270,8 @@ mod tests {
             um_meio_data: Local::now() + um_meio,
             dois_tercos,
             dois_tercos_data: Local::now() + dois_tercos,
-        }};
+        },
+            ..calc};
         println!("{:?}", calc);
         println!("{:?}", expected);
         assert_eq!(calc, expected);
@@ -283,7 +303,8 @@ mod tests {
             um_meio_data: Local::now() + um_meio,
             dois_tercos,
             dois_tercos_data: Local::now() + dois_tercos,
-        }};
+        },
+            ..calc};
         println!("{:?}", calc);
         println!("{:?}", expected);
         assert_eq!(calc, expected);
