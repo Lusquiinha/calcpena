@@ -2,7 +2,10 @@ use eframe::{App, egui, Frame};
 use eframe::egui::Context;
 use crate::calculadora::{Calculadora, DeltaData};
 use crate::input_numerico::InputNumerico;
-use chrono::{DateTime, Local};
+use chrono::{NaiveDate};
+use egui_extras::DatePickerButton;
+
+
 pub struct Calcpena {
     anos:  InputNumerico,
     meses: InputNumerico,
@@ -20,6 +23,8 @@ impl App for Calcpena {
             });
             self.calc.update();
             ui.add_space(50.0);
+            ui.draw_datepicker(&mut self.calc.data_inicial, &mut self.calc.updt);
+            ui.add_space(50.0);
 
             ui.horizontal(|ui|{
                 ui.vertical(|ui|{
@@ -32,7 +37,8 @@ impl App for Calcpena {
                     ui.triple_label("1/2".to_string(), self.calc.datas.um_meio, self.calc.datas.um_meio_data);
                     ui.triple_label("2/3".to_string(), self.calc.datas.dois_tercos, self.calc.datas.dois_tercos_data);
                 });
-            })
+            });
+
         });
     }
 }
@@ -49,18 +55,36 @@ impl Calcpena {
 }
 
 //trait that defines the behavior of the ui elements
-trait TripleLabel {
-    fn triple_label(&mut self, esq: String, dir_up: DeltaData, dir_down: DateTime<Local>);
+trait CustomUi {
+    fn triple_label(&mut self, esq: String, dir_up: DeltaData, dir_down: NaiveDate);
+    fn draw_datepicker(&mut self, date: &mut NaiveDate, update: &mut bool);
 }
 
-impl TripleLabel for egui::Ui {
-    fn triple_label(&mut self, esq: String, dir_up: DeltaData, dir_down: DateTime<Local>) {
+impl CustomUi for egui::Ui {
+    fn triple_label(&mut self, esq: String, dir_up: DeltaData, dir_down: NaiveDate) {
         self.horizontal(|ui| {
             ui.label(esq);
             ui.vertical(|ui| {
-                ui.label(dir_up.to_string());
-                ui.label(dir_down.format("%d/%m/%Y").to_string());
+                if dir_up.zero(){
+                    ui.label("0".to_string());
+                    ui.label("0".to_string());
+                }
+                else{
+                    ui.label(dir_up.to_string());
+                    ui.label(dir_down.format("%d/%m/%Y").to_string());
+
+                }
             });
         });
     }
+
+    fn draw_datepicker(&mut self, date: &mut NaiveDate, update: &mut bool) {
+        self.horizontal(|ui| {
+            ui.label("Data Inicial");
+            if ui.add(DatePickerButton::new(date)).changed(){
+                *update = true;
+            };
+        });
+    }
 }
+

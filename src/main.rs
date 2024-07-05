@@ -17,6 +17,6 @@ fn main() {
     let _ = run_native(
         "Calcpena",
         options,
-        Box::new(|cc| Box::new(Calcpena::default()))
+        Box::new(|cc| Ok(Box::new(Calcpena::default())))
     );
 }

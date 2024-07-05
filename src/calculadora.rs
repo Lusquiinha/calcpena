@@ -1,10 +1,11 @@
 use std::ops::Add;
-use chrono::{DateTime, Duration, Local, Months};
+use chrono::{Duration, Local, Months, NaiveDate};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Calculadora {
     pub datas: CalculosDeData,
     pub dd: DeltaData,
+    pub data_inicial: NaiveDate,
     pub updt: bool,
     pub teste: u32,
 }
@@ -13,20 +14,20 @@ pub struct Calculadora {
 impl Calculadora{
     pub fn new() -> Self{
         Self{
-            datas: CalculosDeData::new(DeltaData{dia: 0, mes: 0, ano: 0}),
+            datas: CalculosDeData::new(DeltaData{dia: 0, mes: 0, ano: 0}, Local::now().date_naive()),
             dd: DeltaData::new(0, 0, 0),
+            data_inicial: Local::now().date_naive(),
             updt: false,
             teste: 0,
         }
     }
-    pub fn calc_datas(&mut self, dd: DeltaData) {
-        self.datas = CalculosDeData::new(dd);
-        self.dd = dd;
+    pub fn calc_datas(&mut self, dd: DeltaData, data_inicial: NaiveDate) {
+        self.datas = CalculosDeData::new(dd, data_inicial);
     }
 
     pub fn update(&mut self) {
         if self.updt{
-            self.calc_datas(self.dd);
+            self.calc_datas(self.dd, self.data_inicial);
             self.updt = false;
             println!("{}", self.teste);
             self.teste+=1;
@@ -36,23 +37,23 @@ impl Calculadora{
 #[derive(Clone, Copy, Debug)]
 pub struct CalculosDeData{
     pub inteiro:            DeltaData,
-    pub inteiro_data:       DateTime<Local>,
+    pub inteiro_data:       NaiveDate,
     pub um_sexto:           DeltaData,
-    pub um_sexto_data:      DateTime<Local>,
+    pub um_sexto_data:      NaiveDate,
     pub um_quinto:          DeltaData,
-    pub um_quinto_data:     DateTime<Local>,
+    pub um_quinto_data:     NaiveDate,
     pub um_quarto:          DeltaData,
-    pub um_quarto_data:     DateTime<Local>,
+    pub um_quarto_data:     NaiveDate,
     pub um_terco:           DeltaData,
-    pub um_terco_data:      DateTime<Local>,
+    pub um_terco_data:      NaiveDate,
     pub um_meio:            DeltaData,
-    pub um_meio_data:       DateTime<Local>,
+    pub um_meio_data:       NaiveDate,
     pub dois_tercos:        DeltaData,
-    pub dois_tercos_data:   DateTime<Local>,
+    pub dois_tercos_data:   NaiveDate,
 }
 
 impl CalculosDeData{
-    pub fn new(dd: DeltaData) -> Self{
+    pub fn new(dd: DeltaData, data_inicial: NaiveDate) -> Self{
         let meses = dd.ano * 12 + dd.mes;
         let mes_sexto = meses / 6;
         let um_sexto = DeltaData{dia: meses % 6 * 30 / 6 + dd.dia / 6, mes: mes_sexto % 12, ano: mes_sexto / 12};
@@ -72,19 +73,19 @@ impl CalculosDeData{
         }
         Self{
             inteiro: dd,
-            inteiro_data: Local::now() + dd - Duration::days(1),
+            inteiro_data: data_inicial + dd - Duration::days(1),
             um_sexto,
-            um_sexto_data: Local::now() + um_sexto - Duration::days(1),
+            um_sexto_data: data_inicial + um_sexto - Duration::days(1),
             um_quinto,
-            um_quinto_data: Local::now() + um_quinto - Duration::days(1),
+            um_quinto_data: data_inicial + um_quinto - Duration::days(1),
             um_quarto,
-            um_quarto_data: Local::now() + um_quarto - Duration::days(1),
+            um_quarto_data: data_inicial + um_quarto - Duration::days(1),
             um_terco,
-            um_terco_data: Local::now() + um_terco - Duration::days(1),
+            um_terco_data: data_inicial + um_terco - Duration::days(1),
             um_meio,
-            um_meio_data: Local::now() + um_meio - Duration::days(1),
+            um_meio_data: data_inicial + um_meio - Duration::days(1),
             dois_tercos,
-            dois_tercos_data: Local::now() + dois_tercos - Duration::days(1),
+            dois_tercos_data: data_inicial + dois_tercos - Duration::days(1),
         }
     }
 }
@@ -115,11 +116,14 @@ impl DeltaData {
     pub fn to_string(&self) -> String {
         format!("{} a, {} m, {} d", self.ano, self.mes, self.dia)
     }
+    pub fn zero(&self) -> bool {
+        self.dia == 0 && self.mes == 0 && self.ano == 0
+    }
 }
 
 
-impl Add<DeltaData> for DateTime<Local> {
-    type Output = DateTime<Local>;
+impl Add<DeltaData> for NaiveDate {
+    type Output = NaiveDate;
 
     fn add(self, rhs: DeltaData) -> Self::Output {
         self + Duration::days(rhs.dia as i64) + Months::new(rhs.mes + rhs.ano * 12)
@@ -136,10 +140,10 @@ mod tests {
     fn test_calculadora_new() {
         let dd = DeltaData { dia: 1, mes: 1, ano: 1 };
         let mut calc = Calculadora::new();
-        calc.calc_datas(dd);
+        calc.calc_datas(dd, Local::now().date_naive());
 
         // Check if the `inteiro_data` is not in the past
-        assert!(calc.datas.inteiro_data >= Utc::now());
+        assert!(calc.datas.inteiro_data >= Utc::now().date_naive());
     }
 
 
@@ -147,7 +151,7 @@ mod tests {
     fn test_1() {
         let dd = DeltaData { dia: 1, mes: 1, ano: 1 };
         let mut calc = Calculadora::new();
-        calc.calc_datas(dd);
+        calc.calc_datas(dd, Local::now().date_naive());
         let um_sexto =      DeltaData { dia: 5, mes: 2, ano: 0 };
         let um_quinto =     DeltaData { dia: 18, mes: 2, ano: 0 };
         let um_quarto =     DeltaData { dia: 7, mes: 3, ano: 0 };
@@ -157,19 +161,19 @@ mod tests {
 
         let expected = Calculadora { datas: CalculosDeData {
             inteiro: dd,
-            inteiro_data: Local::now() + dd,
+            inteiro_data: Local::now().date_naive() + dd,
             um_sexto,
-            um_sexto_data: Local::now() + um_sexto,
+            um_sexto_data: Local::now().date_naive() + um_sexto,
             um_quinto,
-            um_quinto_data: Local::now() + um_quinto,
+            um_quinto_data: Local::now().date_naive() + um_quinto,
             um_quarto,
-            um_quarto_data: Local::now() + um_quarto,
+            um_quarto_data: Local::now().date_naive() + um_quarto,
             um_terco,
-            um_terco_data: Local::now() + um_terco,
+            um_terco_data: Local::now().date_naive() + um_terco,
             um_meio,
-            um_meio_data: Local::now() + um_meio,
+            um_meio_data: Local::now().date_naive() + um_meio,
             dois_tercos,
-            dois_tercos_data: Local::now() + dois_tercos,
+            dois_tercos_data: Local::now().date_naive() + dois_tercos,
         },
         ..calc};
         println!("{:?}", calc);
@@ -181,7 +185,7 @@ mod tests {
     fn test_2() {
         let dd = DeltaData { dia: 25, mes: 4, ano: 8 };
         let mut calc = Calculadora::new();
-        calc.calc_datas(dd);
+        calc.calc_datas(dd, Local::now().date_naive());
         let um_sexto =      DeltaData { dia: 24, mes: 4 , ano: 1 };
         let um_quinto =     DeltaData { dia: 5 , mes: 8 , ano: 1 };
         let um_quarto =     DeltaData { dia: 6 , mes: 1 , ano: 2 };
@@ -191,19 +195,19 @@ mod tests {
 
         let expected = Calculadora { datas: CalculosDeData {
             inteiro: dd,
-            inteiro_data: Local::now() + dd,
+            inteiro_data: Local::now().date_naive() + dd,
             um_sexto,
-            um_sexto_data: Local::now() + um_sexto,
+            um_sexto_data: Local::now().date_naive() + um_sexto,
             um_quinto,
-            um_quinto_data: Local::now() + um_quinto,
+            um_quinto_data: Local::now().date_naive() + um_quinto,
             um_quarto,
-            um_quarto_data: Local::now() + um_quarto,
+            um_quarto_data: Local::now().date_naive() + um_quarto,
             um_terco,
-            um_terco_data: Local::now() + um_terco,
+            um_terco_data: Local::now().date_naive() + um_terco,
             um_meio,
-            um_meio_data: Local::now() + um_meio,
+            um_meio_data: Local::now().date_naive() + um_meio,
             dois_tercos,
-            dois_tercos_data: Local::now() + dois_tercos,
+            dois_tercos_data: Local::now().date_naive() + dois_tercos,
         },
             ..calc};
         println!("{:?}", calc);
@@ -214,7 +218,7 @@ mod tests {
     fn test_3() {
         let dd = DeltaData { dia: 30, mes: 12, ano: 99 };
         let mut calc = Calculadora::new();
-        calc.calc_datas(dd);
+        calc.calc_datas(dd, Local::now().date_naive());
         let um_sexto =      DeltaData { dia: 5, mes: 8 , ano: 16};
         let um_quinto =     DeltaData { dia: 6 , mes: 0 , ano: 20};
         let um_quarto =     DeltaData { dia: 7 , mes: 0 , ano: 25};
@@ -224,19 +228,19 @@ mod tests {
 
         let expected = Calculadora { datas: CalculosDeData {
             inteiro: dd,
-            inteiro_data: Local::now() + dd,
+            inteiro_data: Local::now().date_naive() + dd,
             um_sexto,
-            um_sexto_data: Local::now() + um_sexto,
+            um_sexto_data: Local::now().date_naive() + um_sexto,
             um_quinto,
-            um_quinto_data: Local::now() + um_quinto,
+            um_quinto_data: Local::now().date_naive() + um_quinto,
             um_quarto,
-            um_quarto_data: Local::now() + um_quarto,
+            um_quarto_data: Local::now().date_naive() + um_quarto,
             um_terco,
-            um_terco_data: Local::now() + um_terco,
+            um_terco_data: Local::now().date_naive() + um_terco,
             um_meio,
-            um_meio_data: Local::now() + um_meio,
+            um_meio_data: Local::now().date_naive() + um_meio,
             dois_tercos,
-            dois_tercos_data: Local::now() + dois_tercos,
+            dois_tercos_data: Local::now().date_naive() + dois_tercos,
         },
             ..calc};
         println!("{:?}", calc);
@@ -247,7 +251,7 @@ mod tests {
     fn test_4() {
         let dd = DeltaData { dia: 22, mes: 6, ano: 11 };
         let mut calc = Calculadora::new();
-        calc.calc_datas(dd);
+        calc.calc_datas(dd, Local::now().date_naive());
         let um_sexto =      DeltaData { dia: 3, mes: 11, ano: 1};
         let um_quinto =     DeltaData { dia: 22, mes: 3 , ano: 2};
         let um_quarto =     DeltaData { dia: 20, mes: 10, ano: 2};
@@ -257,19 +261,19 @@ mod tests {
 
         let expected = Calculadora { datas: CalculosDeData {
             inteiro: dd,
-            inteiro_data: Local::now() + dd,
+            inteiro_data: Local::now().date_naive() + dd,
             um_sexto,
-            um_sexto_data: Local::now() + um_sexto,
+            um_sexto_data: Local::now().date_naive() + um_sexto,
             um_quinto,
-            um_quinto_data: Local::now() + um_quinto,
+            um_quinto_data: Local::now().date_naive() + um_quinto,
             um_quarto,
-            um_quarto_data: Local::now() + um_quarto,
+            um_quarto_data: Local::now().date_naive() + um_quarto,
             um_terco,
-            um_terco_data: Local::now() + um_terco,
+            um_terco_data: Local::now().date_naive() + um_terco,
             um_meio,
-            um_meio_data: Local::now() + um_meio,
+            um_meio_data: Local::now().date_naive() + um_meio,
             dois_tercos,
-            dois_tercos_data: Local::now() + dois_tercos,
+            dois_tercos_data: Local::now().date_naive() + dois_tercos,
         },
             ..calc};
         println!("{:?}", calc);
@@ -280,7 +284,7 @@ mod tests {
     fn test_5() {
         let dd = DeltaData { dia: 0, mes: 8, ano: 0 };
         let mut calc = Calculadora::new();
-        calc.calc_datas(dd);
+        calc.calc_datas(dd, Local::now().date_naive());
         let um_sexto =      DeltaData { dia: 10, mes: 1, ano: 0};
         let um_quinto =     DeltaData { dia: 18, mes: 1 , ano: 0};
         let um_quarto =     DeltaData { dia: 0, mes: 2, ano: 0};
@@ -290,19 +294,19 @@ mod tests {
 
         let expected = Calculadora { datas: CalculosDeData {
             inteiro: dd,
-            inteiro_data: Local::now() + dd,
+            inteiro_data: Local::now().date_naive() + dd,
             um_sexto,
-            um_sexto_data: Local::now() + um_sexto,
+            um_sexto_data: Local::now().date_naive() + um_sexto,
             um_quinto,
-            um_quinto_data: Local::now() + um_quinto,
+            um_quinto_data: Local::now().date_naive() + um_quinto,
             um_quarto,
-            um_quarto_data: Local::now() + um_quarto,
+            um_quarto_data: Local::now().date_naive() + um_quarto,
             um_terco,
-            um_terco_data: Local::now() + um_terco,
+            um_terco_data: Local::now().date_naive() + um_terco,
             um_meio,
-            um_meio_data: Local::now() + um_meio,
+            um_meio_data: Local::now().date_naive() + um_meio,
             dois_tercos,
-            dois_tercos_data: Local::now() + dois_tercos,
+            dois_tercos_data: Local::now().date_naive() + dois_tercos,
         },
             ..calc};
         println!("{:?}", calc);
