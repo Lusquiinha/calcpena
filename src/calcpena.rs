@@ -14,7 +14,7 @@ pub struct Calcpena {
 }
 
 impl App for Calcpena {
-    fn update(&mut self, ctx: &Context, frame: &mut Frame) {
+    fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         egui::CentralPanel::default().show(ctx, |ui|{
             ui.horizontal(|ui| {
                 self.anos.show(ui, &mut self.calc.dd.ano, &mut self.calc.updt);

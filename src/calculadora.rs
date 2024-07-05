@@ -132,7 +132,6 @@ impl Add<DeltaData> for NaiveDate {
 
 #[cfg(test)]
 mod tests {
-    use std::cmp::PartialEq;
     use super::*;
     use chrono::Utc;
 
