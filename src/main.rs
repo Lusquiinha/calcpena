@@ -7,8 +7,8 @@ use crate::calcpena::Calcpena;
 
 fn main() {
     let options = NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([440.0, 605.0])
-            .with_resizable(false),
+        viewport: egui::ViewportBuilder::default().with_inner_size([359.0, 623.0])
+            .with_resizable(true),
         follow_system_theme: false,
         default_theme: eframe::Theme::Light,
         ..Default::default()

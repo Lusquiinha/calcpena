@@ -38,18 +38,30 @@ impl Calculadora{
 pub struct CalculosDeData{
     pub inteiro:            DeltaData,
     pub inteiro_data:       NaiveDate,
+    pub um_oitavo:          DeltaData,
+    pub um_oitavo_data:     NaiveDate,
+    pub dezesseis_pct:      DeltaData,
+    pub dezesseis_pct_data: NaiveDate,
     pub um_sexto:           DeltaData,
     pub um_sexto_data:      NaiveDate,
     pub um_quinto:          DeltaData,
     pub um_quinto_data:     NaiveDate,
     pub um_quarto:          DeltaData,
     pub um_quarto_data:     NaiveDate,
+    pub trinta_pct:         DeltaData,
+    pub trinta_pct_data:    NaiveDate,
     pub um_terco:           DeltaData,
     pub um_terco_data:      NaiveDate,
+    pub dois_quintos:       DeltaData,
+    pub dois_quintos_data:  NaiveDate,
     pub um_meio:            DeltaData,
     pub um_meio_data:       NaiveDate,
+    pub tres_quintos:       DeltaData,
+    pub tres_quintos_data:  NaiveDate,
     pub dois_tercos:        DeltaData,
     pub dois_tercos_data:   NaiveDate,
+    pub setenta_pct:        DeltaData,
+    pub setenta_pct_data:   NaiveDate,
 }
 
 impl CalculosDeData{
@@ -71,21 +83,54 @@ impl CalculosDeData{
             dois_tercos.dia -= 30;
             dois_tercos.mes += 1;
         }
+        let mes_oitavo = meses / 8;
+        let um_oitavo = DeltaData{dia: meses % 8 * 30 / 8 + dd.dia / 8, mes: mes_oitavo % 12, ano: mes_oitavo / 12};
+        let mes_dezesseis_pct: u32 = (meses as f32 * 0.16) as u32;
+        let dezesseis_pct = DeltaData{dia: ((meses as f32 * 0.16 - mes_dezesseis_pct as f32) * 30.0 + dd.dia as f32 * 0.16) as u32, mes: mes_dezesseis_pct % 12, ano: mes_dezesseis_pct / 12};
+        let mes_trinta_pct: u32 = (meses as f32 * 0.3) as u32;
+        let trinta_pct = DeltaData{dia: ((meses as f32 * 0.3 - mes_trinta_pct as f32) * 30.0 + dd.dia as f32 * 0.3) as u32, mes: mes_trinta_pct % 12, ano: mes_trinta_pct / 12};
+        let mes_dois_quintos: u32 = (meses as f32 * 0.4) as u32;
+        let dois_quintos = DeltaData{dia: ((meses as f32 * 0.4 - mes_dois_quintos as f32) * 30.0 + dd.dia as f32 * 0.4) as u32, mes: mes_dois_quintos % 12, ano: mes_dois_quintos / 12};
+        let mes_tres_quintos: u32 = (meses as f32 * 0.6) as u32;
+        let mut tres_quintos = DeltaData{dia: ((meses as f32 * 0.6 - mes_tres_quintos as f32) * 30.0 + dd.dia as f32 * 0.6) as u32, mes: mes_tres_quintos % 12, ano: mes_tres_quintos / 12};
+        let mes_setenta_pct: u32 = (meses as f32 * 0.7) as u32;
+        let mut setenta_pct = DeltaData{dia: ((meses as f32 * 0.7 - mes_setenta_pct as f32) * 30.0 + dd.dia as f32 * 0.7) as u32, mes: mes_setenta_pct % 12, ano: mes_setenta_pct / 12};
+        if tres_quintos.dia > 30 {
+            tres_quintos.dia -= 30;
+            tres_quintos.mes += 1;
+        }
+        if setenta_pct.dia > 30 {
+            setenta_pct.dia -= 30;
+            setenta_pct.mes += 1;
+        }
+
         Self{
             inteiro: dd,
             inteiro_data: data_inicial + dd - Duration::days(1),
+            um_oitavo,
+            um_oitavo_data: data_inicial + um_oitavo - Duration::days(1),
+            dezesseis_pct,
+            dezesseis_pct_data: data_inicial + dezesseis_pct - Duration::days(1),
             um_sexto,
             um_sexto_data: data_inicial + um_sexto - Duration::days(1),
             um_quinto,
             um_quinto_data: data_inicial + um_quinto - Duration::days(1),
             um_quarto,
             um_quarto_data: data_inicial + um_quarto - Duration::days(1),
+            trinta_pct,
+            trinta_pct_data: data_inicial + trinta_pct - Duration::days(1),
             um_terco,
             um_terco_data: data_inicial + um_terco - Duration::days(1),
+            dois_quintos,
+            dois_quintos_data: data_inicial + dois_quintos - Duration::days(1),
             um_meio,
             um_meio_data: data_inicial + um_meio - Duration::days(1),
+            tres_quintos,
+            tres_quintos_data: data_inicial + tres_quintos - Duration::days(1),
             dois_tercos,
             dois_tercos_data: data_inicial + dois_tercos - Duration::days(1),
+            setenta_pct,
+            setenta_pct_data: data_inicial + setenta_pct - Duration::days(1),
         }
     }
 }
@@ -114,7 +159,17 @@ impl DeltaData {
         Self { dia, mes, ano }
     }
     pub fn to_string(&self) -> String {
-        format!("{} a, {} m, {} d", self.ano, self.mes, self.dia)
+        let mut string= String::new();
+        if self.ano != 0 {
+            string += format!("{} a ", self.ano).as_str();
+        }
+        if self.mes != 0 {
+            string += format!("{} m ", self.mes).as_str();
+        }
+        if self.dia != 0 {
+            string += format!("{} d", self.dia).as_str();
+        }
+        string
     }
     pub fn zero(&self) -> bool {
         self.dia == 0 && self.mes == 0 && self.ano == 0
